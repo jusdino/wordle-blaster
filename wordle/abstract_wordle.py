@@ -30,7 +30,7 @@ class AbstractWordle(ABC):
         if self._state['gameStatus'] == GameStatus.IN_PROGRESS:
             raise RuntimeError('Cannot get state for a game that is in progress')
         tries = self._state['rowIndex'] if self._state['gameStatus'] == GameStatus.WIN else 'X'
-        report = f'Wordle {tries}/6\n'
+        report = f'{self.__class__.__name__} {tries}/6\n'
         for i in range(self._state['rowIndex']):
             for e in self._state['evaluations'][i]:
                 report += self._evaluation_map[e]
