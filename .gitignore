@@ -1,10 +1,20 @@
+# Misc
 *.log
+
+# Python stuff
 .python-version
-.idea
-.vscode
 __pycache__
 *.pyc
+*.egg-info
+
+# IDEs
+.idea
+.vscode
+
+# Safe place to put secret urls, etc
 .secret
+
+# Other cruft I don't want drafted in
 *.png
 *.xcf
 *.webp
