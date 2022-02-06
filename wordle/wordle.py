@@ -10,7 +10,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from wordle.abstract_wordle import AbstractWordle
 
 
-logging.basicConfig()
 logger = logging.getLogger(__name__)
 if os.environ.get('DEBUG', '').lower() == 'true':
     logger.setLevel(logging.DEBUG)

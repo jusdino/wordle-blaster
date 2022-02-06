@@ -22,6 +22,7 @@ setup(
     author='Justin Frahm',
     url='https://github.com/jusdino/wordle-blaster',
     packages=['wordle', 'blaster'],
+    package_data={'wordle': ['resources/*.txt']},
     install_requires=requirements,
     extras_require={
         'selenium': selenium_requirements,

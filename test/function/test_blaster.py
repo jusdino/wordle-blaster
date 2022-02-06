@@ -6,7 +6,7 @@ from wordle.enums import GameStatus
 class TestBlaster(TestCase):
     def setUp(self):
         from wordle import SimWordle
-        from blaster import BasicWordleBlaster
+        from blaster.basic import BasicWordleBlaster
 
         self.wordle = SimWordle()
         self.blaster = BasicWordleBlaster(self.wordle)

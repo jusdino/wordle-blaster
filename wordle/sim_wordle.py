@@ -6,10 +6,18 @@ from .abstract_wordle import AbstractWordle
 
 
 class SimWordle(AbstractWordle):
-    def __init__(self):
+    def __init__(self, *, solution: str = None):
+        """
+        A simulation of the wordle game for ease of testing
+        """
         super().__init__()
-        with open(os.path.join('resources', 'words.txt'), 'r') as f:
-            words = tuple(word.strip() for word in f)
+        solutions = self.get_solutions()
+
+        if solution is not None:
+            # A little validation on the provided solution
+            if not isinstance(solution, str) or solution not in self.get_words():
+                raise ValueError(f'Expected {solution} to be a str word with 5 letters.')
+
         self._state = {
             'boardState': ['', '', '', '', '', ''],
             'evaluations': [
@@ -20,7 +28,7 @@ class SimWordle(AbstractWordle):
                 None,
                 None
             ],
-            'solution': choice(words),
+            'solution': solution or choice(solutions),
             'gameStatus': GameStatus.IN_PROGRESS,
             'hardMode': False,
             'rowIndex': 0

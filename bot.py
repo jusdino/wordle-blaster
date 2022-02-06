@@ -6,7 +6,7 @@ import logging
 import requests
 
 from wordle import SimWordle
-from blaster import BasicWordleBlaster
+from blaster.basic import BasicWordleBlaster
 
 
 logging.basicConfig()

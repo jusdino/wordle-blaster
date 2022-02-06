@@ -1,4 +1,5 @@
 #!/bin/env python3
+
 import os
 from random import choice
 import logging
@@ -8,7 +9,6 @@ from wordle import Wordle
 from wordle.enums import Evaluation, GameStatus
 
 
-logging.basicConfig()
 logger = logging.getLogger(__name__)
 if os.environ.get('DEBUG', '').lower() == 'true':
     logger.setLevel(logging.DEBUG)
@@ -18,7 +18,7 @@ else:
 
 class BasicWordleBlaster():
     """
-    Start with the most intuitive (first) strategy I can think of
+    Start with the most intuitive (first) strategy I can think of: random choice of possible words
     """
     def __init__(self, wordle: AbstractWordle = None):
         self.constraints = {
@@ -29,7 +29,7 @@ class BasicWordleBlaster():
             'guesses': set()
         }
         self.wordle = wordle or Wordle(headless=True)
-        self.words_file = open(os.path.join('resources', 'words.txt'), 'r')
+        self.words = self.wordle.get_words()
         logger.debug('Wordle created and ready')
 
     def __del__(self):
@@ -50,9 +50,8 @@ class BasicWordleBlaster():
         logger.info('Oh no...')
 
     def get_candidate_word(self) -> str:
-        self.words_file.seek(0)
         candidates = tuple(
-            word.strip() for word in self.words_file
+            word for word in self.words
             if self.check_word(word)
         )
         logger.info('Choosing from %s candidate words', len(candidates))

@@ -1,6 +1,8 @@
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
+import importlib
 
 from wordle.enums import Evaluation, GameStatus
+from wordle import resources
 
 
 class AbstractWordle(ABC):
@@ -10,12 +12,33 @@ class AbstractWordle(ABC):
         Evaluation.CORRECT: "🟩"
     }
 
+    @staticmethod
+    def get_words():
+        """
+        A convenience method to get the official tuple of valid words
+        """
+        with importlib.resources.as_file(importlib.resources.files(resources).joinpath('words.txt')) as path:
+            with open(path, 'r') as f:
+                return tuple(word.strip() for word in f)
+
+    @staticmethod
+    def get_solutions():
+        """
+        A convenience method to get the official tuple of potential solutions
+        """
+        with importlib.resources.as_file(importlib.resources.files(resources).joinpath('solutions.txt')) as path:
+            with open(path, 'r') as f:
+                return tuple(word.strip() for word in f)
+
     def __init__(self):
         self._state = {'gameStatus': GameStatus.IN_PROGRESS}
 
     @property
     def state(self):
-        # Not that the copy here provides some little protection against
+        """
+        Get a copy of the game state from the wordle
+        """
+        # Note that the copy here provides some little protection against
         # mutation by the user of this interface, but only at the top level.
         state = self._state.copy()
         # I just can't stand to hand the solution to the blaster
@@ -24,6 +47,9 @@ class AbstractWordle(ABC):
 
     @abstractmethod
     def submit_guess(self, guess: str) -> list:
+        """
+        Submit a guess word to the wordle, recieve an evaluation back
+        """
         pass
 
     def get_share_summary(self):
