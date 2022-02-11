@@ -19,7 +19,7 @@ else:
 
 def _get_game_state(driver: webdriver.Firefox):
     logger.debug('Updating state...')
-    return driver.execute_script('return JSON.parse(window.localStorage.gameState)')
+    return driver.execute_script('return JSON.parse(window.localStorage["nyt-wordle-state"])')
 
 
 def _has_board_state(driver: webdriver.Firefox):
@@ -48,7 +48,7 @@ class Wordle(AbstractWordle):
         options.headless = headless
         self.driver = webdriver.Firefox(options=options)
         logger.info('Loading wordle...')
-        self.driver.get('https://www.powerlanguage.co.uk/wordle/')
+        self.driver.get('https://www.nytimes.com/games/wordle/index.html')
         self.wait = WebDriverWait(self.driver, 10, ignored_exceptions=(JavascriptException,))
         self.wait.until(_has_board_state)
         self.body = self.driver.find_element_by_tag_name('body')

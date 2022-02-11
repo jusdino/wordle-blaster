@@ -56,6 +56,7 @@ discovered_modules = {
 for module in discovered_modules.values():
     for name, member in inspect.getmembers(module):
         if inspect.isclass(member) and issubclass(member, BasicWordleBlaster):
+            # member is a WordleBlaster class
             method_name = f'test_{name}'
             print(f'Discovered {name} for testing')
             setattr(TestPerformance, method_name, _test_blaster(member))
