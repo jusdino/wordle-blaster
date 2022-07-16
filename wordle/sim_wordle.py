@@ -1,4 +1,3 @@
-import os
 from random import choice
 
 from .enums import Evaluation, GameStatus
@@ -50,33 +49,33 @@ class SimWordle(AbstractWordle):
         """
         Return evaluation of guess.
         Note: The case of double-letter words is handled specially and I'm not positive on
-        the details. Best I can guess, the second letter in a double-letter guess word
-        will only be evaluated as CORRECT or PRESENT if there is also a second of that
-        letter in the solution word. I track the letter counts here to account for that.
+        the details. It appears that evaluations for any given letter are awarded in a best
+        first result order, meaning that in the case of double guess letters, the CORRECT
+        result will take precedence over the PRESENT result, and any given solution letter
+        only 'awards' a positive evaluation once.
         """
         self._state['boardState'][self._state['rowIndex']] = guess
-        evaluation = []
-        guess_letter_counts = {}
+        solution_list = [letter for letter in self._state['solution']]
+        evaluation_list = [Evaluation.ABSENT]*5
+        # Find all CORRECT results first
         for i, letter in enumerate(guess):
-            try:
-                guess_letter_counts[letter] += 1
-            except KeyError:
-                guess_letter_counts[letter] = 1
-            evaluation.append(self._evaluate_letter(i, letter, guess_letter_counts))
+            if solution_list[i] == letter:
+                solution_list[i] = None
+                evaluation_list[i] = Evaluation.CORRECT
+        # Then find PRESENT results
+        for i, letter in enumerate(guess):
+            if evaluation_list[i] == Evaluation.ABSENT:
+                try:
+                    match_idx = solution_list.index(letter)
+                    solution_list[match_idx] = None
+                    evaluation_list[i] = Evaluation.PRESENT
+                except ValueError:
+                    pass
 
-        self._state['evaluations'][self._state['rowIndex']] = evaluation
+        self._state['evaluations'][self._state['rowIndex']] = evaluation_list
         self._state['rowIndex'] += 1
         if guess == self._state['solution']:
             self._state['gameStatus'] = GameStatus.WIN
         elif self._state['rowIndex'] > 5:
             self._state['gameStatus'] = GameStatus.FAIL
-        return evaluation
-
-    def _evaluate_letter(self, idx: int, letter: str, guess_letter_counts: dict) -> str:
-        # Force ABSENT for possible repeat letters that outnumber repeats in the solution
-        if guess_letter_counts[letter] <= self.solution_letter_counts.get(letter, 0):
-            if letter == self._state['solution'][idx]:
-                return Evaluation.CORRECT
-            if letter in self._state['solution']:
-                return Evaluation.PRESENT
-        return Evaluation.ABSENT
+        return evaluation_list

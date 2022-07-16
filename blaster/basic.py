@@ -49,11 +49,14 @@ class BasicWordleBlaster():
                 return
         logger.info('Oh no...')
 
-    def get_candidate_word(self) -> str:
-        candidates = tuple(
+    def get_candidate_words(self) -> str:
+        return tuple(
             word for word in self.words
             if self.check_word(word)
         )
+
+    def get_candidate_word(self) -> str:
+        candidates = self.get_candidate_words()
         logger.info('Choosing from %s candidate words', len(candidates))
         return self.choose_from_candidates(candidates)
 
@@ -81,7 +84,8 @@ class BasicWordleBlaster():
             if evaluation == Evaluation.CORRECT:
                 self.constraints['present'].add(word[i])
                 self.constraints['correct'][i] = word[i]
-            elif evaluation == Evaluation.PRESENT:
+        for i, evaluation in enumerate(result):
+            if evaluation == Evaluation.PRESENT:
                 self.constraints['present'].add(word[i])
                 self.constraints['incorrect'][i].add(word[i])
             elif evaluation == Evaluation.ABSENT:
