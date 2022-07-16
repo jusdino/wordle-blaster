@@ -9,7 +9,10 @@ from wordle import SimWordle
 from blaster.basic import BasicWordleBlaster
 
 
-logging.basicConfig()
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %H:%M:%S')
 logger = logging.getLogger(__name__)
 if os.environ.get('DEBUG', '').lower() == 'true':
     logger.setLevel(logging.DEBUG)
@@ -24,6 +27,7 @@ if __name__ == "__main__":
     # wordle = SimWordle()
     # blaster = BasicWordleBlaster(wordle)
     blaster = BasicWordleBlaster()
+    logger.info('Wordle solution number %s', blaster.wordle.get_game_solution_number())
     blaster.solve()
     logger.info('Posting result')
 
@@ -47,3 +51,4 @@ if __name__ == "__main__":
     # Discord webhook
     discord_message = summary + "[What is this?](<https://github.com/jusdino/wordle-blaster>)"
     requests.post(discord_url, json={'content': discord_message})
+    logger.info(summary)

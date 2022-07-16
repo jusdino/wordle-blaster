@@ -52,11 +52,16 @@ class AbstractWordle(ABC):
         """
         pass
 
+    def get_game_solution_number(self):
+        solution = self._state['solution']
+        return self.get_solutions().index(solution)
+
     def get_share_summary(self):
         if self._state['gameStatus'] == GameStatus.IN_PROGRESS:
             raise RuntimeError('Cannot get state for a game that is in progress')
+        solution_number = self.get_game_solution_number()
         tries = self._state['rowIndex'] if self._state['gameStatus'] == GameStatus.WIN else 'X'
-        report = f'{self.__class__.__name__} {tries}/6\n'
+        report = f'{self.__class__.__name__} {solution_number} {tries}/6\n'
         for i in range(self._state['rowIndex']):
             for e in self._state['evaluations'][i]:
                 report += self._evaluation_map[e]
