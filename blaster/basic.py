@@ -1,8 +1,10 @@
 #!/bin/env python3
 
+from copy import deepcopy
 import os
 from random import choice
 import logging
+from typing import Tuple
 
 from wordle.abstract_wordle import AbstractWordle
 from wordle import Wordle
@@ -49,7 +51,7 @@ class BasicWordleBlaster():
                 return
         logger.info('Oh no...')
 
-    def get_candidate_words(self) -> str:
+    def get_candidate_words(self) -> Tuple[str]:
         return tuple(
             word for word in self.words
             if self.check_word(word)
@@ -64,32 +66,46 @@ class BasicWordleBlaster():
         return choice(candidates)
 
     def check_word(self, word: str) -> bool:
-        for i, correct in enumerate(self.constraints['correct']):
+        return self.check_word_with_constraints(word, self.constraints)
+
+    @staticmethod
+    def check_word_with_constraints(word: str, constraints: dict) -> bool:
+        for i, correct in enumerate(constraints['correct']):
             if correct is not None and word[i] != correct:
                 return False
-        for absent in self.constraints['absent']:
+        for absent in constraints['absent']:
             if absent in word:
                 return False
-        for present in self.constraints['present']:
+        for present in constraints['present']:
             if present not in word:
                 return False
-        for i, incorrects in enumerate(self.constraints['incorrect']):
+        for i, incorrects in enumerate(constraints['incorrect']):
             if word[i] in incorrects:
                 return False
-        return word not in self.constraints['guesses']
+        return word not in constraints['guesses']
 
     def process_result(self, word: str, result: list) -> None:
-        self.constraints['guesses'].add(word)
+        self.constraints = self.process_result_with_constraints(
+            guess=word,
+            result=result,
+            constraints=self.constraints
+        )
+
+    @staticmethod
+    def process_result_with_constraints(guess: str, result: list, constraints: dict) -> dict:
+        constraints = deepcopy(constraints)
+        constraints['guesses'].add(guess)
         for i, evaluation in enumerate(result):
             if evaluation == Evaluation.CORRECT:
-                self.constraints['present'].add(word[i])
-                self.constraints['correct'][i] = word[i]
+                constraints['present'].add(guess[i])
+                constraints['correct'][i] = guess[i]
         for i, evaluation in enumerate(result):
             if evaluation == Evaluation.PRESENT:
-                self.constraints['present'].add(word[i])
-                self.constraints['incorrect'][i].add(word[i])
+                constraints['present'].add(guess[i])
+                constraints['incorrect'][i].add(guess[i])
             elif evaluation == Evaluation.ABSENT:
                 # In the case of a double-letter, wordle will evaluate the second
                 # as absent, so we have to handle that case here
-                if word[i] not in self.constraints['present']:
-                    self.constraints['absent'].add(word[i])
+                if guess[i] not in constraints['present']:
+                    constraints['absent'].add(guess[i])
+        return constraints

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import importlib
+from typing import Tuple
 
 from wordle.enums import Evaluation, GameStatus
 from wordle import resources
@@ -13,7 +14,7 @@ class AbstractWordle(ABC):
     }
 
     @staticmethod
-    def get_words():
+    def get_words() -> Tuple[str]:
         """
         A convenience method to get the official tuple of valid words
         """

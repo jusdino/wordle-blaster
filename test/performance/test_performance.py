@@ -1,5 +1,4 @@
 import logging
-import os
 from unittest import TestCase
 import importlib
 import pkgutil
@@ -8,6 +7,9 @@ import inspect
 from wordle import SimWordle
 from blaster.basic import BasicWordleBlaster
 import blaster
+
+
+logger = logging.getLogger(__name__)
 
 
 class TestPerformance(TestCase):
@@ -27,16 +29,25 @@ def _test_blaster(BlasterCls):
         """
         Solve each possible wordle solution and average the total guesses
         """
+        print(f'{BlasterCls.__name__}: Beginning performance test')
+        logger.info(f'{BlasterCls.__name__}: Beginning performance test')
         solutions = SimWordle.get_solutions()
+        total_solutions = len(solutions)
 
         guesses = 0
-        for solution in solutions:
+        failures = 0
+        for i, solution in enumerate(solutions):
             wordle = SimWordle(solution=solution)
             blaster = BlasterCls(wordle)
             blaster.solve()
             guesses += wordle.state['rowIndex']
+            if guesses == 6:
+                failures += 1
+            logger.info('Completed wordle %s of %s in %s guesses', i, total_solutions, wordle.state['rowIndex'])
         guesses /= len(solutions)
-        print(f'{BlasterCls.__name__} averaged {guesses:.2f} guesses')
+        success_rate = 100*(total_solutions - failures)/total_solutions
+        logger.info(f'{BlasterCls.__name__} averaged {guesses:.2f} guesses, success rate {success_rate:.2f}%')
+        print(f'{BlasterCls.__name__} averaged {guesses:.2f} guesses, success rate {success_rate:.2f}%')
     return test_method
 
 

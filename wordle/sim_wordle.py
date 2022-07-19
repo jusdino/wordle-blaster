@@ -43,9 +43,22 @@ class SimWordle(AbstractWordle):
         super().submit_guess(guess)
         if self._state['gameStatus'] != GameStatus.IN_PROGRESS:
             raise RuntimeError('This game is no longer in progress!')
-        return self._evaluate_guess(guess)
+        return self._evaluate_and_update(guess)
 
-    def _evaluate_guess(self, guess: str) -> list:
+    def _evaluate_and_update(self, guess: str) -> list:
+        evaluation_list = self.evaluate_guess(guess, self._state['solution'])
+
+        self._state['boardState'][self._state['rowIndex']] = guess
+        self._state['evaluations'][self._state['rowIndex']] = evaluation_list
+        self._state['rowIndex'] += 1
+        if guess == self._state['solution']:
+            self._state['gameStatus'] = GameStatus.WIN
+        elif self._state['rowIndex'] > 5:
+            self._state['gameStatus'] = GameStatus.FAIL
+        return evaluation_list
+
+    @staticmethod
+    def evaluate_guess(guess: str, solution: str):
         """
         Return evaluation of guess.
         Note: The case of double-letter words is handled specially and I'm not positive on
@@ -54,8 +67,7 @@ class SimWordle(AbstractWordle):
         result will take precedence over the PRESENT result, and any given solution letter
         only 'awards' a positive evaluation once.
         """
-        self._state['boardState'][self._state['rowIndex']] = guess
-        solution_list = [letter for letter in self._state['solution']]
+        solution_list = [letter for letter in solution]
         evaluation_list = [Evaluation.ABSENT]*5
         # Find all CORRECT results first
         for i, letter in enumerate(guess):
@@ -71,11 +83,4 @@ class SimWordle(AbstractWordle):
                     evaluation_list[i] = Evaluation.PRESENT
                 except ValueError:
                     pass
-
-        self._state['evaluations'][self._state['rowIndex']] = evaluation_list
-        self._state['rowIndex'] += 1
-        if guess == self._state['solution']:
-            self._state['gameStatus'] = GameStatus.WIN
-        elif self._state['rowIndex'] > 5:
-            self._state['gameStatus'] = GameStatus.FAIL
         return evaluation_list

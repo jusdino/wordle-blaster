@@ -4,7 +4,7 @@ from wordle.sim_wordle import SimWordle
 
 
 class TestSimWordle(TestCase):
-    def test_submit_guess(self):
+    def test_evaluate_guess(self):
         from wordle.enums import Evaluation
         examples = (
             (
@@ -54,6 +54,8 @@ class TestSimWordle(TestCase):
         )
         for example in examples:
             with self.subTest(solution=example[0], guess=example[1]):
-                wordle = SimWordle(solution=example[0])
-                result = wordle.submit_guess(example[1])
+                result = SimWordle.evaluate_guess(
+                    guess=example[1],
+                    solution=example[0]
+                )
                 self.assertEqual(example[2], result)
