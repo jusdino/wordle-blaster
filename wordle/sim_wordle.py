@@ -5,6 +5,8 @@ from .abstract_wordle import AbstractWordle
 
 
 class SimWordle(AbstractWordle):
+    _evaluation_cache = {}
+
     def __init__(self, *, solution: str = None):
         """
         A simulation of the wordle game for ease of testing
@@ -39,7 +41,7 @@ class SimWordle(AbstractWordle):
             except KeyError:
                 self.solution_letter_counts[letter] = 1
 
-    def submit_guess(self, guess: str) -> list:
+    def submit_guess(self, guess: str) -> int:
         super().submit_guess(guess)
         if self._state['gameStatus'] != GameStatus.IN_PROGRESS:
             raise RuntimeError('This game is no longer in progress!')
@@ -67,6 +69,10 @@ class SimWordle(AbstractWordle):
         result will take precedence over the PRESENT result, and any given solution letter
         only 'awards' a positive evaluation once.
         """
+        try:
+            return cls._evaluation_cache[solution][guess]
+        except KeyError:
+            pass
         solution_list = [letter for letter in solution]
         evaluation_list = [Evaluation.ABSENT]*5
         # Find all CORRECT results first
@@ -83,4 +89,10 @@ class SimWordle(AbstractWordle):
                     evaluation_list[i] = Evaluation.PRESENT
                 except ValueError:
                     pass
-        return cls.get_evaluation_hash(evaluation_list)
+
+        # Cache evaluations to save some compute
+        result = cls.get_evaluation_hash(evaluation_list)
+        guesses = cls._evaluation_cache.get(solution, {})
+        guesses[guess] = result
+        cls._evaluation_cache[solution] = guesses
+        return result
