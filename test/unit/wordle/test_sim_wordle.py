@@ -10,46 +10,46 @@ class TestSimWordle(TestCase):
             (
                 'basic',  # Solution
                 'acids',  # Guess
-                [
+                SimWordle.get_evaluation_hash([
                     Evaluation.PRESENT,
                     Evaluation.PRESENT,
                     Evaluation.PRESENT,
                     Evaluation.ABSENT,
                     Evaluation.PRESENT
-                ],  # Result
+                ]),  # Result
             ),
             (
                 'basic',  # Solution
                 'guess',  # Guess
-                [
+                SimWordle.get_evaluation_hash([
                     Evaluation.ABSENT,
                     Evaluation.ABSENT,
                     Evaluation.ABSENT,
                     Evaluation.PRESENT,
                     Evaluation.ABSENT
-                ],  # Result
+                ]),  # Result
             ),
             (
                 'solid',
                 'poles',
-                [
+                SimWordle.get_evaluation_hash([
                     Evaluation.ABSENT,
                     Evaluation.CORRECT,
                     Evaluation.CORRECT,
                     Evaluation.ABSENT,
                     Evaluation.PRESENT
-                ]
+                ])
             ),
             (
                 'voice',
                 'click',
-                [
+                SimWordle.get_evaluation_hash([
                     Evaluation.ABSENT,
                     Evaluation.ABSENT,
                     Evaluation.CORRECT,
                     Evaluation.CORRECT,
                     Evaluation.ABSENT
-                ]
+                ])
             )
         )
         for example in examples:

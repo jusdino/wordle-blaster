@@ -2,10 +2,9 @@
 import logging
 import os
 from math import log
-from typing import List, Tuple, Iterable
+from typing import Tuple
 
 from wordle import SimWordle
-from wordle.enums import Evaluation
 from blaster.basic import BasicWordleBlaster
 
 
@@ -22,22 +21,22 @@ class EntropyBlaster(BasicWordleBlaster):
     and inspired by 3blue1brown. See his great description at:
     https://www.youtube.com/watch?v=v68zYyaEmEA&t=666s
     """
-    def choose_from_candidates(self, candidates: Tuple[str]) -> str:
+    def choose_next_guess(self) -> str:
         # This sometimes happens when there is a bug - so we raise
         # an error here to be clear what happened.
-        if not candidates:
+        if not self.candidates:
             raise RuntimeError('We ran out of guess candidates!')
         # Hard-coding the first guess, since it takes a lot of compute and is
         # always the same
-        if len(candidates) == len(self.words):
+        if len(self.candidates) == len(self.words):
             return 'tares'
         # Expected information calc doesn't help when we already
         # know the answer.
-        if len(candidates) == 1:
-            return candidates[0]
+        if len(self.candidates) == 1:
+            return tuple(self.candidates)[0]
         guesses = []
         for guess in self.words:
-            guesses.append((guess, self.score_guess(guess, candidates)))
+            guesses.append((guess, self.score_guess(guess, self.candidates)))
         best_guess = guesses[0][0]
         best_score = guesses[0][1]
         for guess, score in guesses:
@@ -58,8 +57,7 @@ class EntropyBlaster(BasicWordleBlaster):
         results = {}
         for candidate in candidates:
             result = SimWordle.evaluate_guess(guess, candidate)
-            result_hash = cls.get_evaluation_hash(result)
-            results[result_hash] = results.get(result_hash, 0) + 1
+            results[result] = results.get(result, 0) + 1
         return results
 
     @staticmethod
@@ -70,28 +68,3 @@ class EntropyBlaster(BasicWordleBlaster):
             information = -log(probability, 2)
             score += probability * information
         return score
-
-    @staticmethod
-    def get_evaluation_hash(evaluation: List[Evaluation]) -> int:
-        """
-        Convert the list of Evaluations into a unique integer hash
-
-        Two bits per evaluation in the list:
-        00 = Absent
-        01 = Present
-        10 = Correct
-
-        Example Evaluation list:
-        | Absent | Present | Correct | Absent | Present |
-        | 00     | 01      | 10      | 00     | 01      | -> 0001100001 -> 97
-        """
-        evaluation_map = {
-            Evaluation.ABSENT: 0,
-            Evaluation.PRESENT: 1,
-            Evaluation.CORRECT: 2
-        }
-        eval_hash = 0
-        for e in evaluation:
-            eval_hash = eval_hash << 2
-            eval_hash = eval_hash | evaluation_map[e]
-        return eval_hash

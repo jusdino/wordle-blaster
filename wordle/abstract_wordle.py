@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import importlib
-from typing import Tuple
+from typing import Tuple, List
 
 from wordle.enums import Evaluation, GameStatus
 from wordle import resources
@@ -47,7 +47,7 @@ class AbstractWordle(ABC):
         return state
 
     @abstractmethod
-    def submit_guess(self, guess: str) -> list:
+    def submit_guess(self, guess: str) -> int:
         """
         Submit a guess word to the wordle, recieve an evaluation back
         """
@@ -68,3 +68,28 @@ class AbstractWordle(ABC):
                 report += self._evaluation_map[e]
             report += '\n'
         return report
+
+    @staticmethod
+    def get_evaluation_hash(evaluation: List[str]) -> int:
+        """
+        Convert the list of Evaluations into a unique integer hash
+
+        Two bits per evaluation in the list:
+        00 = Absent
+        01 = Present
+        10 = Correct
+
+        Example Evaluation list:
+        | Absent | Present | Correct | Absent | Present |
+        | 00     | 01      | 10      | 00     | 01      | -> 0001100001 -> 97
+        """
+        evaluation_map = {
+            Evaluation.ABSENT: 0,
+            Evaluation.PRESENT: 1,
+            Evaluation.CORRECT: 2
+        }
+        eval_hash = 0
+        for e in evaluation:
+            eval_hash = eval_hash << 2
+            eval_hash = eval_hash | evaluation_map[e]
+        return eval_hash

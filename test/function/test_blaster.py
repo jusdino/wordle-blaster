@@ -14,9 +14,6 @@ class TestBlaster(TestCase):
 
         self.assertNotEqual(GameStatus.IN_PROGRESS, wordle.state['gameStatus'])
         self.assertGreater(wordle.state['rowIndex'], 1)
-        self.assertEqual(wordle.state['rowIndex'], len([x for x in blaster.constraints['guesses']]))
-        for guess in wordle.state['boardState'][:wordle.state['rowIndex']]:
-            self.assertIn(guess, blaster.constraints['guesses'])
 
     def test_voice(self):
         """Known error case, reproduced based on logs"""
@@ -27,12 +24,11 @@ class TestBlaster(TestCase):
         word = 'click'
         blaster = BasicWordleBlaster(wordle)
         result = wordle.submit_guess(word)
-        expected_result = ['absent', 'absent', 'correct', 'correct', 'absent']
+        expected_result = SimWordle.get_evaluation_hash(['absent', 'absent', 'correct', 'correct', 'absent'])
         self.assertEqual(expected_result, result)
         blaster.process_result(word, expected_result)
 
-        candidates = blaster.get_candidate_words()
-        self.assertGreaterEqual(len(candidates), 1)
+        self.assertGreaterEqual(len(blaster.candidates), 1)
 
     def test_moist(self):
         """Known error case, reproduced based on logs"""
@@ -44,15 +40,14 @@ class TestBlaster(TestCase):
 
         word = 'nucha'
         result = wordle.submit_guess(word)
-        expected_result = ['absent', 'absent', 'absent', 'absent', 'absent']
+        expected_result = SimWordle.get_evaluation_hash(['absent', 'absent', 'absent', 'absent', 'absent'])
         self.assertEqual(expected_result, result)
         blaster.process_result(word, expected_result)
 
         word = 'tryst'
         result = wordle.submit_guess(word)
-        expected_result = ['absent', 'absent', 'absent', 'correct', 'correct']
+        expected_result = SimWordle.get_evaluation_hash(['absent', 'absent', 'absent', 'correct', 'correct'])
         self.assertEqual(expected_result, result)
         blaster.process_result(word, expected_result)
 
-        candidates = blaster.get_candidate_words()
-        self.assertGreaterEqual(len(candidates), 1)
+        self.assertGreaterEqual(len(blaster.candidates), 1)

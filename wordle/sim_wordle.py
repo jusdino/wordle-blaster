@@ -45,20 +45,20 @@ class SimWordle(AbstractWordle):
             raise RuntimeError('This game is no longer in progress!')
         return self._evaluate_and_update(guess)
 
-    def _evaluate_and_update(self, guess: str) -> list:
-        evaluation_list = self.evaluate_guess(guess, self._state['solution'])
+    def _evaluate_and_update(self, guess: str) -> int:
+        evaluation = self.evaluate_guess(guess, self._state['solution'])
 
         self._state['boardState'][self._state['rowIndex']] = guess
-        self._state['evaluations'][self._state['rowIndex']] = evaluation_list
+        self._state['evaluations'][self._state['rowIndex']] = evaluation
         self._state['rowIndex'] += 1
         if guess == self._state['solution']:
             self._state['gameStatus'] = GameStatus.WIN
         elif self._state['rowIndex'] > 5:
             self._state['gameStatus'] = GameStatus.FAIL
-        return evaluation_list
+        return evaluation
 
-    @staticmethod
-    def evaluate_guess(guess: str, solution: str):
+    @classmethod
+    def evaluate_guess(cls, guess: str, solution: str) -> int:
         """
         Return evaluation of guess.
         Note: The case of double-letter words is handled specially and I'm not positive on
@@ -83,4 +83,4 @@ class SimWordle(AbstractWordle):
                     evaluation_list[i] = Evaluation.PRESENT
                 except ValueError:
                     pass
-        return evaluation_list
+        return cls.get_evaluation_hash(evaluation_list)
