@@ -5,8 +5,8 @@ import logging
 
 import requests
 
-from wordle import SimWordle
-from blaster.basic import BasicWordleBlaster
+# from wordle import SimWordle
+from blaster.entropy import EntropyBlaster
 
 
 logging.basicConfig(
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     discord_url = sys.argv[2]
     # wordle = SimWordle()
     # blaster = BasicWordleBlaster(wordle)
-    blaster = BasicWordleBlaster()
+    blaster = EntropyBlaster()
     logger.info('Wordle solution number %s', blaster.wordle.get_game_solution_number())
     blaster.solve()
     logger.info('Posting result')

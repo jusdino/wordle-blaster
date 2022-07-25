@@ -1,5 +1,5 @@
 import logging
-import os
+from datetime import datetime
 from unittest import TestCase
 import importlib
 import pkgutil
@@ -8,6 +8,10 @@ import inspect
 from wordle import SimWordle
 from blaster.basic import BasicWordleBlaster
 import blaster
+from wordle.enums import GameStatus
+
+
+logger = logging.getLogger(__name__)
 
 
 class TestPerformance(TestCase):
@@ -27,16 +31,52 @@ def _test_blaster(BlasterCls):
         """
         Solve each possible wordle solution and average the total guesses
         """
+        print(f'{BlasterCls.__name__}: Beginning performance test')
         solutions = SimWordle.get_solutions()
+        total_solutions = len(solutions)
 
+        total_game_duration = 0
         guesses = 0
-        for solution in solutions:
-            wordle = SimWordle(solution=solution)
-            blaster = BlasterCls(wordle)
-            blaster.solve()
-            guesses += wordle.state['rowIndex']
-        guesses /= len(solutions)
-        print(f'{BlasterCls.__name__} averaged {guesses:.2f} guesses')
+        wins = 0
+        for i, solution in enumerate(solutions):
+            try:
+                start_time = datetime.now()
+                wordle = SimWordle(solution=solution)
+                blaster = BlasterCls(wordle)
+                blaster.solve()
+                if wordle.state['gameStatus'] == GameStatus.WIN:
+                    guesses += wordle.state['rowIndex']
+                    wins += 1
+                end_time = datetime.now()
+                game_duration = (end_time-start_time).total_seconds()
+                total_game_duration += game_duration
+                logger.info(
+                    'Completed wordle %s of %s in %s guesses and in %.3f seconds',
+                    i,
+                    total_solutions,
+                    wordle.state['rowIndex'],
+                    game_duration
+                )
+                logger.info('Mean game duration so far: %.2f seconds', total_game_duration/(i+1))
+            except KeyboardInterrupt:
+                total_solutions = i+1
+                break
+        mean_game_duration = total_game_duration/total_solutions
+        guesses /= wins
+        success_rate = 100*wins/total_solutions
+        logger.info('Completed %s wordles', total_solutions)
+        logger.info(
+            '%s averaged %2f guesses, success rate %.2f%%, mean game duration %.3f seconds',
+            BlasterCls.__name__,
+            guesses,
+            success_rate,
+            mean_game_duration
+        )
+        print(f'{BlasterCls.__name__} completed {total_solutions} wordles')
+        print(
+            f'{BlasterCls.__name__} averaged {guesses:.2f} guesses, success rate '
+            f'{success_rate:.2f}%, mean game time {mean_game_duration:.3f} seconds'
+        )
     return test_method
 
 

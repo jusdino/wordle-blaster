@@ -64,7 +64,7 @@ class Wordle(AbstractWordle):
         state = _get_game_state(self.driver)
         self._state = state
 
-    def submit_guess(self, guess: str) -> list:
+    def submit_guess(self, guess: str) -> int:
         guess = guess.strip()
         logger.debug('Submitting guess, "%s"', guess)
         self.body.send_keys(guess)
@@ -72,4 +72,4 @@ class Wordle(AbstractWordle):
         self.wait.until(_HasGuess(guess))
         self._update_state()
         time.sleep(6)  # There is no state we can wait on, but Wordle won't accept new submissions for a bit
-        return self._state['evaluations'][self._state['rowIndex']-1]
+        return self.get_evaluation_hash(self._state['evaluations'][self._state['rowIndex']-1])
